@@ -1,4 +1,4 @@
-package com.example.geosms;
+package localhost.garyhilares.geosms;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,17 +9,16 @@ import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +36,9 @@ public class MyBroadCastReceiver extends BroadcastReceiver {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
             /* Iterate over new messages */
             for(SmsMessage message: Telephony.Sms.Intents.getMessagesFromIntent(intent)){
+                String author = message.getOriginatingAddress();
                 String messageContent = message.getDisplayMessageBody();
-                logger.addMessage(String.format("Message received: %s", messageContent));
+                logger.addMessage(String.format("Message \"%s\" from %s", messageContent, author));
                 /* Create request */
                 StringRequest str_req = new StringRequest(Request.Method.POST,"https://geosms-2.vercel.app/command",
                         /* On response */
@@ -55,8 +55,6 @@ public class MyBroadCastReceiver extends BroadcastReceiver {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError volleyError){
-                                SmsManager manager = SmsManager.getDefault();
-                                manager.sendTextMessage(message.getOriginatingAddress(),null, "Something went wrong!",null, null);
                                 try {
                                     String responseBody = new String(volleyError.networkResponse.data, "utf-8").trim();
                                     logger.addMessage(String.format("StringRequest error received when replying to message \"%s\": %s", messageContent, responseBody));
@@ -69,7 +67,8 @@ public class MyBroadCastReceiver extends BroadcastReceiver {
                     @Override
                     public Map<String,String> getParams(){
                         Map<String,String> params = new HashMap<String, String>();
-                        params.put("sms",messageContent);
+                        params.put("sms", messageContent);
+                        params.put("num", author);
                         return params;
                     }
                 };

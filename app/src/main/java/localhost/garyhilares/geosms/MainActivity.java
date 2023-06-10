@@ -1,8 +1,7 @@
-package com.example.geosms;
+package localhost.garyhilares.geosms;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
